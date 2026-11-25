@@ -1,0 +1,8 @@
+import { PageHeader, Card, DemoNotice, StatusBadge, EmptyState } from '../components/UI'
+import { demoDeliveries } from '../data/demo'
+import { useNavigate } from 'react-router-dom'
+import { MapPin, Package, ArrowRight } from 'lucide-react'
+export default function PartnerDashboard(){
+ const nav=useNavigate()
+ return <><PageHeader title="My deliveries" subtitle="Your assigned food rescue deliveries."/><DemoNotice/><div className="stats-row"><Card className="stat-card"><small>Assigned tasks</small><strong>{demoDeliveries.length}</strong><span>Demo deliveries</span></Card><Card className="stat-card"><small>Plates to move</small><strong>{demoDeliveries.reduce((a,d)=>a+d.plates,0)}</strong><span>Across your route</span></Card></div><div className="delivery-grid">{demoDeliveries.map(d=><Card key={d.id} className="delivery-card"><div className="delivery-card-head"><span className="delivery-id">{d.id}</span><StatusBadge status={d.status.replace('_',' ')}/></div><h3>{d.food}</h3><p className="muted">{d.plates} plates · {d.eta} estimated</p><div className="route-preview"><div className="route-line"><span className="route-dot pickup"/><div><small>Pickup</small><b>{d.pickup}</b></div></div><div className="route-line"><span className="route-dot drop"/><div><small>Drop-off</small><b>{d.drop}</b></div></div></div><button className="btn-secondary full" onClick={()=>nav(`/partner/delivery/${d.id}`)}>View delivery details <ArrowRight size={17}/></button></Card>)}</div>{!demoDeliveries.length&&<EmptyState title="No deliveries assigned" description="New delivery assignments will show here."/>}</>
+}

@@ -1,0 +1,15 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { PageHeader, Card, DemoNotice } from '../components/UI'
+import MapView from '../components/MapView'
+import { api } from '../components/api'
+import { MapPin, PlusCircle } from 'lucide-react'
+export default function NewListing() {
+ const nav=useNavigate()
+ const [form,setForm]=useState({food_name:'',is_veg:true,plates_total:1,prepared_at:'',expires_at:'',pickup_start:'',pickup_end:''})
+ const [location,setLocation]=useState({lat:28.474,lng:77.504})
+ const [message,setMessage]=useState('')
+ const update=(key,val)=>setForm(f=>({...f,[key]:val}))
+ const submit=async e=>{e.preventDefault();setMessage('');if(!form.food_name.trim())return setMessage('Enter a food name.');if(Number(form.plates_total)<1||!Number.isInteger(Number(form.plates_total)))return setMessage('Plates must be a positive whole number.');if(form.prepared_at&&form.expires_at&&form.expires_at<=form.prepared_at)return setMessage('Expiry must be after preparation time.');try{await api.post('/listings',{...form,plates_total:Number(form.plates_total),lat:location.lat,lng:location.lng});nav('/provider')}catch{setMessage('API is not connected yet. Your form is ready; check backend connection or use demo mode.')} }
+ return <><PageHeader title="Post surplus food" subtitle="Share food that can make a difference today."/><DemoNotice/><div className="two-column"><Card><form className="form-stack" onSubmit={submit}><label>Food name<input required value={form.food_name} onChange={e=>update('food_name',e.target.value)} placeholder="e.g. Vegetable pulao"/></label><div className="toggle-row"><span>Food type</span><button type="button" className={'toggle-choice '+(form.is_veg?'selected':'')} onClick={()=>update('is_veg',true)}>Vegetarian</button><button type="button" className={'toggle-choice '+(!form.is_veg?'selected':'')} onClick={()=>update('is_veg',false)}>Non-vegetarian</button></div><label>Number of plates<input type="number" min="1" step="1" required value={form.plates_total} onChange={e=>update('plates_total',e.target.value)}/></label><div className="form-grid"><label>Prepared at<input type="datetime-local" value={form.prepared_at} onChange={e=>update('prepared_at',e.target.value)}/></label><label>Expires at<input type="datetime-local" value={form.expires_at} onChange={e=>update('expires_at',e.target.value)}/></label><label>Pickup starts<input type="datetime-local" value={form.pickup_start} onChange={e=>update('pickup_start',e.target.value)}/></label><label>Pickup ends<input type="datetime-local" value={form.pickup_end} onChange={e=>update('pickup_end',e.target.value)}/></label></div>{message&&<p className="form-message">{message}</p>}<button className="btn-primary" type="submit"><PlusCircle size={18}/> Publish listing</button></form></Card><Card><h3 className="card-title"><MapPin size={18}/> Pickup location</h3><p className="muted small">Click the map to choose a location. (Prototype map points are illustrative.)</p><MapView height={340}/><div className="coordinates">Selected: {location.lat.toFixed(4)}, {location.lng.toFixed(4)}</div></Card></div></>
+}
